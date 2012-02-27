@@ -14,6 +14,10 @@ $(document).ready(function() {
         return false;
     });
     
+    $(window).resize(function() {
+        $.colorbox.resize({width: '95%', height: '95%'});
+    });
+    
 });
 
 function checkSubnav(elTop) {

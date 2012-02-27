@@ -6,10 +6,24 @@
     <link rel="shortcut icon" href="<?php echo THEMEPATH; ?>/images/folder.png" />
     
     <link rel="stylesheet" type="text/css" href="<?php echo THEMEPATH; ?>/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="resources/colorbox/1/colorbox.css" />
     <link rel="stylesheet" type="text/css" href="<?php echo THEMEPATH; ?>/style.css" />
     
     <script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.7/jquery.min.js"></script>
+    <script type="text/javascript" src="resources/colorbox/jquery.colorbox.js"></script>
     <script type="text/javascript" src="<?php echo THEMEPATH; ?>/directorylister.js"></script>
+    
+    <script type="text/javascript">
+    $(document).ready(function(){
+        $("a[rel='colorbox']").colorbox({
+            rel: false,
+            width: "95%",
+            height: "95%",
+            opacity: ".5",
+            iframe: true
+        });
+    });
+    </script>
     
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 </head>
@@ -52,7 +66,7 @@
     <ul id="directoryListing">
     <?php $x = 1; foreach($lister->listDirectory() as $name => $fileInfo): ?>
         <li class="<?php echo $x %2 == 0 ? 'even' : 'odd'; ?>">
-            <a href="<?php if(is_dir($fileInfo['file_path'])) { echo '?dir=' . $fileInfo['file_path']; } else { echo $fileInfo['file_path']; } ?>" class="clearfix">
+            <a href="<?php if(is_dir($fileInfo['file_path'])) { echo '?dir=' . $fileInfo['file_path']; } else { echo $fileInfo['file_path']; } ?>" class="clearfix" title="<?php echo $name; ?>" <?php echo $fileInfo['file_type'] == 'file' ? 'rel="colorbox"' : false ?>>
                 <span class="fileName">
                     <i class="<?php echo $fileInfo['icon_class']; ?>">&nbsp;</i>
                     <?php echo $name; ?>

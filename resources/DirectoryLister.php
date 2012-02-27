@@ -316,9 +316,13 @@ class DirectoryLister {
                     
                     // Determine file type by extension
                     if (is_dir($realPath)) {
+                        $fileType = 'dir';
                         $iconClass = 'icon-folder';
                         $sort = 1;
                     } else {
+                        // File type is file
+                        $fileType = 'file';
+                        
                         // Get file extension
                         $fileExt = pathinfo($realPath, PATHINFO_EXTENSION);
                     
@@ -348,6 +352,7 @@ class DirectoryLister {
                             $directoryArray['..'] = array(
                                 'file_path'  => $this->_appURL . $directoryPath,
                                 'file_size'  => '-',
+                                'file_type'  => 'dir',
                                 'mod_time'   => date('Y-m-d H:i:s', filemtime($realPath)),
                                 'icon_class' => 'icon-up-dir',
                                 'sort'       => 0
@@ -361,6 +366,7 @@ class DirectoryLister {
                             $directoryArray[pathinfo($realPath, PATHINFO_BASENAME)] = array(
                                 'file_path'  => $relativePath,
                                 'file_size'  => is_dir($realPath) ? '-' : round(filesize($realPath) / 1024) . 'KB',
+                                'file_type'  => $fileType,
                                 'mod_time'   => date('Y-m-d H:i:s', filemtime($realPath)),
                                 'icon_class' => $iconClass,
                                 'sort'       => $sort
