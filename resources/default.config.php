@@ -13,7 +13,13 @@ return array(
         '.htaccess',
         '.htpasswd',
         'resources',
-     ),
+    ),
+     
+    // Google Docs View File Types
+    'gdoc_file_types' => array(
+       'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'pdf', 'pages', 'ai', 'psd',
+       'tiff', 'dxf', 'svg', 'eps', 'ps', 'ttf', 'xps', 'zip', 'rar', 'txt'
+    ),
     
     // Icon settings
     'file_types' => array(
