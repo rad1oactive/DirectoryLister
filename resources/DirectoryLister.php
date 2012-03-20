@@ -356,6 +356,14 @@ class DirectoryLister {
                     
                 } elseif (!$this->_isHidden($relativePath)) {
                     
+                    // Set variable defaults
+                    $docView = false;
+                    
+                    // Determine if file can be viewed in the Google Docs viewer
+                    if (in_array(pathinfo($realPath, PATHINFO_EXTENSION), $this->_config['docviewer_file_types'])) {
+                        $docView = true;
+                    }
+                    
                     // Add all non-hidden files to the array
                     if ($this->_directory != '.' || $file != 'index.php') {
                         $directoryArray[pathinfo($realPath, PATHINFO_BASENAME)] = array(
@@ -363,6 +371,7 @@ class DirectoryLister {
                             'file_size'  => is_dir($realPath) ? '-' : round(filesize($realPath) / 1024) . 'KB',
                             'mod_time'   => date('Y-m-d H:i:s', filemtime($realPath)),
                             'icon_class' => $iconClass,
+                            'doc_viewer' => $docView,
                             'sort'       => $sort
                         );
                     }
