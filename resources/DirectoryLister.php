@@ -16,10 +16,10 @@
 class DirectoryLister {
     
     // Define application version
-    const VERSION = '2.0.0-dev';
+    const VERSION = '2.0.4';
     
-    // Set some default variables
-    protected $_themeName     = 'bootstrap';
+    // Reserve some variables
+    protected $_themeName     = NULL;
     protected $_directory     = NULL;
     protected $_appDir        = NULL;
     protected $_appURL        = NULL;
@@ -108,16 +108,20 @@ class DirectoryLister {
             
             if ($dir != '.') {
                 
-                $link = $this->_appURL . '?dir=';
+                $dirPath  = NULL;
                 
+                // Build the directory path
                 for ($i = 0; $i <= $key; $i++) {
-                    $link = $link . $dirArray[$i] . '/';
+                    $dirPath = $dirPath . $dirArray[$i] . '/';
                 }
                 
                 // Remove trailing slash
-                if(substr($link, -1) == '/') {
-                    $link = substr($link, 0, -1);
+                if(substr($dirPath, -1) == '/') {
+                    $dirPath = substr($dirPath, 0, -1);
                 }
+                
+                // Combine the base path and dir path
+                $link = $this->_appURL . '?dir=' . urlencode($dirPath);
                 
                 $breadcrumbsArray[] = array(
                     'link' => $link,
@@ -320,7 +324,7 @@ class DirectoryLister {
                     $sort = 1;
                 } else {
                     // Get file extension
-                    $fileExt = pathinfo($realPath, PATHINFO_EXTENSION);
+                    $fileExt = strtolower(pathinfo($realPath, PATHINFO_EXTENSION));
                 
                     if (isset($this->_config['file_types'][$fileExt])) {
                         $iconClass = $this->_config['file_types'][$fileExt];
@@ -341,7 +345,7 @@ class DirectoryLister {
                         $directoryPath = implode('/', $pathArray);
                         
                         if (!empty($directoryPath)) {
-                            $directoryPath = '?dir=' . $directoryPath;
+                            $directoryPath = '?dir=' . urlencode($directoryPath);
                         }
                         
                         // Add file info to the array
@@ -366,8 +370,17 @@ class DirectoryLister {
                     
                     // Add all non-hidden files to the array
                     if ($this->_directory != '.' || $file != 'index.php') {
-                        $directoryArray[pathinfo($realPath, PATHINFO_BASENAME)] = array(
-                            'file_path'  => $relativePath,
+                        
+                        // Build the file path
+                        if (is_dir($relativePath)) {
+                            $filePath = '?dir=' . urlencode($relativePath);
+                        } else {
+                            $filePath = $relativePath;
+                        }
+                        
+                        // Add the info to the main array
+                        $directoryArray[pathinfo($relativePath, PATHINFO_BASENAME)] = array(
+                            'file_path'  => $filePath,
                             'file_size'  => is_dir($realPath) ? '-' : round(filesize($realPath) / 1024) . 'KB',
                             'mod_time'   => date('Y-m-d H:i:s', filemtime($realPath)),
                             'icon_class' => $iconClass,
@@ -530,7 +543,7 @@ class DirectoryLister {
     private function _getAppUrl() {
         
         // Get the server protocol
-        if (isset($_SERVER['HTTPS'])) {
+        if (!empty($_SERVER['HTTPS'])) {
             $protocol = 'https://';
         } else {
             $protocol = 'http://';
@@ -542,6 +555,11 @@ class DirectoryLister {
         // Get the URL path
         $pathParts = pathinfo($_SERVER['PHP_SELF']);
         $path      = $pathParts['dirname'];
+        
+        // Remove backslash from path (Windows fix)
+        if (substr($path, -1) == '\\') {
+            $path = substr($path, 0, -1);
+        }
         
         // Ensure the path ends with a forward slash
         if (substr($path, -1) != '/') {
@@ -556,11 +574,11 @@ class DirectoryLister {
     }
     
     /**
-     * Compares two paths and returns the relative path from one to the other
-     * 
+      * Compares two paths and returns the relative path from one to the other
+     *
      * @param string $fromPath Starting path
      * @param string $toPath Ending path
-     * @return string $relativePath
+     * @return string $relativePath Relative path from $fromPath to $toPath
      * @access private
      */
     private function _getRelativePath($fromPath, $toPath) {
@@ -569,12 +587,12 @@ class DirectoryLister {
         if (!defined('DS')) define('DS', DIRECTORY_SEPARATOR);
         
         // Remove double slashes from path strings
-        $fromPath   = str_replace(DS . DS, DS, $fromPath);
-        $toPath     = str_replace(DS . DS, DS, $toPath);
+        $fromPath = str_replace(DS . DS, DS, $fromPath);
+        $toPath = str_replace(DS . DS, DS, $toPath);
         
         // Explode working dir and cache dir into arrays
-        $fromPathArray  = explode(DS, $fromPath);
-        $toPathArray    = explode(DS, $toPath);
+        $fromPathArray = explode(DS, $fromPath);
+        $toPathArray = explode(DS, $toPath);
         
         // Remove last fromPath array element if it's empty
         $x = count($fromPathArray) - 1;
@@ -594,23 +612,30 @@ class DirectoryLister {
         $arrayMax = max(count($fromPathArray), count($toPathArray));
         
         // Set some default variables
-        $diffArray  = array();
-        $samePath   = true;
-        $key        = 1;
+        $diffArray = array();
+        $samePath = true;
+        $key = 1;
         
         // Generate array of the path differences
         while ($key <= $arrayMax) {
-            if (@$toPathArray[$key] !== @$fromPathArray[$key] || $samePath !== true) {
+            
+            // Get to path variable
+            $toPath = isset($toPathArray[$key]) ? $toPathArray[$key] : NULL;
+            
+            // Get from path variable
+            $fromPath = isset($fromPathArray[$key]) ? $fromPathArray[$key] : NULL;
+            
+            if ($toPath !== $fromPath || $samePath !== true) {
                 
                 // Prepend '..' for every level up that must be traversed
                 if (isset($fromPathArray[$key])) {
                     array_unshift($diffArray, '..');
                 }
                 
-                // Append directory name for every directory that must be traversed  
+                // Append directory name for every directory that must be traversed
                 if (isset($toPathArray[$key])) {
                     $diffArray[] = $toPathArray[$key];
-                } 
+                }
                 
                 // Directory paths have diverged
                 $samePath = false;
